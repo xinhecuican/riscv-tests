@@ -59,7 +59,7 @@ vpath %.S $(src_dir)
 	$(RISCV_OBJDUMP) $< > $@
 
 %.bin: %
-	$(RISCV_OBJCOPY) $< > $@
+	$(RISCV_OBJCOPY) $< $@
 
 %.out: %
 	$(RISCV_SIM) --isa=rv64gc_zfh_zicboz_svnapot_zicntr_zba_zbb_zbc_zbs --misaligned $< 2> $@

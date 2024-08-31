@@ -102,5 +102,14 @@ static uintptr_t insn_len(uintptr_t pc)
       printf("\n%s: %ld cycles, %ld.%ld cycles/iter, %ld.%ld CPI\n", \
              stringify(code), _c, _c/iter, 10*_c/iter%10, _c/_i, 10*_c/_i%10); \
   } while(0)
+#define good_trap \
+  asm volatile ( \
+    ".word 0x0000000b" \
+  );
+
+#define bad_trap \
+  asm volatile ( \
+    ".word 0x0010000b" \
+  );
 
 #endif //__UTIL_H

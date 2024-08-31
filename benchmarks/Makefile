@@ -19,6 +19,12 @@ src_dir = .
 
 instname = riscv-bmarks
 instbasedir = $(UCB_VLSI_HOME)/install
+MARCH := rv$(XLEN)g
+ifeq ($(XLEN),32)
+MABI := ilp$(XLEN)d
+else
+MABI := ilp$(XLEN)d
+endif
 
 #--------------------------------------------------------------------
 # Sources
@@ -35,14 +41,11 @@ bmarks = \
 	mm \
 	dhrystone \
 	spmv \
-	mt-vvadd \
-	mt-matmul \
-	mt-memcpy \
-	pmp \
-	vec-memcpy \
-	vec-daxpy \
-	vec-sgemm \
-	vec-strcmp \
+	uart \
+	# mt-vvadd \
+	# mt-matmul \
+	# mt-memcpy \
+	# pmp \
 
 #--------------------------------------------------------------------
 # Build rules
@@ -50,11 +53,12 @@ bmarks = \
 
 RISCV_PREFIX ?= riscv$(XLEN)-unknown-elf-
 RISCV_GCC ?= $(RISCV_PREFIX)gcc
-RISCV_GCC_OPTS ?= -DPREALLOCATE=1 -mcmodel=medany -static -std=gnu99 -O2 -ffast-math -fno-common -fno-builtin-printf -fno-tree-loop-distribute-patterns -march=rv$(XLEN)gcv -mabi=$(ABI)
+RISCV_GCC_OPTS ?= -DPREALLOCATE=1 -mcmodel=medany -static -std=gnu99 -O2 -ffast-math -fno-common -fno-builtin-printf -fno-tree-loop-distribute-patterns -march=$(MARCH) -mabi=$(MABI) -Wl,-melf32lriscv
 RISCV_LINK ?= $(RISCV_GCC) -T $(src_dir)/common/test.ld $(incs)
 RISCV_LINK_OPTS ?= -static -nostdlib -nostartfiles -lm -lgcc -T $(src_dir)/common/test.ld
-RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump --disassemble-all --disassemble-zeroes --section=.text --section=.text.startup --section=.text.init --section=.data
-RISCV_SIM ?= spike --isa=rv$(XLEN)gcv
+RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump --disassemble-all --disassemble-zeroes --section=.text --section=.text.startup --section=.text.init --section=.data --section=.rodata --section=.rodata.str1.4
+RISCV_OBJCOPY ?= $(RISCV_PREFIX)objcopy -O binary -j .text.startup -j .text.init -j .text -j .data -j .rodata -j .rodata.str1.4
+RISCV_SIM ?= spike --isa=$(MARCH)
 
 incs  += -I$(src_dir)/../env -I$(src_dir)/common $(addprefix -I$(src_dir)/, $(bmarks))
 objs  :=
@@ -69,9 +73,13 @@ $(foreach bmark,$(bmarks),$(eval $(call compile_template,$(bmark))))
 #------------------------------------------------------------
 # Build and run benchmarks on riscv simulator
 
-bmarks_riscv_bin  = $(addsuffix .riscv,  $(bmarks))
+bmarks_riscv_riscv  = $(addsuffix .riscv,  $(bmarks))
 bmarks_riscv_dump = $(addsuffix .riscv.dump, $(bmarks))
 bmarks_riscv_out  = $(addsuffix .riscv.out,  $(bmarks))
+bmarks_riscv_bin = $(addsuffix .riscv.bin, $(bmarks))
+
+$(bmarks_riscv_bin): %.riscv.bin: %.riscv
+	$(RISCV_OBJCOPY) $< $@
 
 $(bmarks_riscv_dump): %.riscv.dump: %.riscv
 	$(RISCV_OBJDUMP) $< > $@
@@ -79,10 +87,10 @@ $(bmarks_riscv_dump): %.riscv.dump: %.riscv
 $(bmarks_riscv_out): %.riscv.out: %.riscv
 	$(RISCV_SIM) $< > $@
 
-riscv: $(bmarks_riscv_dump)
+riscv: $(bmarks_riscv_bin) $(bmarks_riscv_dump)
 run: $(bmarks_riscv_out)
 
-junk += $(bmarks_riscv_bin) $(bmarks_riscv_dump) $(bmarks_riscv_hex) $(bmarks_riscv_out)
+junk += $(bmarks_riscv_riscv) $(bmarks_riscv_dump) $(bmarks_riscv_hex) $(bmarks_riscv_out) $(bmarks_riscv_bin)
 
 #------------------------------------------------------------
 # Default

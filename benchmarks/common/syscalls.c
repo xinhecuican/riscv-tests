@@ -12,25 +12,23 @@
 
 #undef strcmp
 
-extern volatile uint64_t tohost;
-extern volatile uint64_t fromhost;
+extern volatile uint8_t tohost;
+extern volatile uint8_t fromhost;
 
 static uintptr_t syscall(uintptr_t which, uint64_t arg0, uint64_t arg1, uint64_t arg2)
 {
-  volatile uint64_t magic_mem[8] __attribute__((aligned(64)));
-  magic_mem[0] = which;
-  magic_mem[1] = arg0;
-  magic_mem[2] = arg1;
-  magic_mem[3] = arg2;
-  __sync_synchronize();
+  if(which == SYS_write) {
+    __sync_synchronize();
+    char* buf = (char*)arg1;
+    uint64_t len = arg2;
+    for (int i = 0; i < len; i++) {
+      tohost = buf[i];
+    }
+    __sync_synchronize();
+  }
 
-  tohost = (uintptr_t)magic_mem;
-  while (fromhost == 0)
-    ;
-  fromhost = 0;
 
-  __sync_synchronize();
-  return magic_mem[0];
+  return which;
 }
 
 #define NUM_COUNTERS 2
@@ -61,12 +59,21 @@ void __attribute__((noreturn)) tohost_exit(uintptr_t code)
 
 uintptr_t __attribute__((weak)) handle_trap(uintptr_t cause, uintptr_t epc, uintptr_t regs[32])
 {
-  tohost_exit(1337);
+  // tohost_exit(1337);
+  bad_trap
 }
 
 void exit(int code)
 {
-  tohost_exit(code);
+  if(code != 0){
+    bad_trap
+  }
+  else
+  {
+    good_trap
+  }
+  
+  // tohost_exit(code);
 }
 
 void abort()

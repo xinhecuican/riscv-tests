@@ -8,6 +8,9 @@
 
 #pragma GCC optimize ("unroll-loops")
 
+extern volatile uint64_t tohost;
+extern volatile uint64_t fromhost;
+
 void thread_entry(int cid, int nc)
 {
   const int R = 8;

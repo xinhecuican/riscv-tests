@@ -21,18 +21,21 @@ ENTRY(_start)
 SECTIONS
 {
 
+  . = 0x10000000;
+  .tohost : { *(.tohost) }
+
   /* text: test code section */
   . = 0x80000000;
   .text.init : { *(.text.init) }
-
-  . = ALIGN(0x1000);
-  .tohost : { *(.tohost) }
 
   . = ALIGN(0x1000);
   .text : { *(.text) }
 
   /* data segment */
   .data : { *(.data) }
+
+  .rodata : { *(.rodata) }
+  .rodata.str.4 : { *(.rodata.str.4) }
 
   .sdata : {
     __global_pointer$ = . + 0x800;
