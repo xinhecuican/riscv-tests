@@ -19,11 +19,12 @@ src_dir = .
 
 instname = riscv-bmarks
 instbasedir = $(UCB_VLSI_HOME)/install
-MARCH := rv$(XLEN)g
 ifeq ($(XLEN),32)
-MABI := ilp$(XLEN)d
+MABI := ilp$(XLEN)f
+MARCH := rv32imaf_zifencei_zicsr
 else
 MABI := ilp$(XLEN)d
+MARCH := rv64gc
 endif
 
 #--------------------------------------------------------------------
@@ -51,11 +52,11 @@ bmarks = \
 # Build rules
 #--------------------------------------------------------------------
 
-RISCV_PREFIX ?= riscv$(XLEN)-unknown-elf-
+RISCV_PREFIX ?= riscv64-unknown-elf-
 RISCV_GCC ?= $(RISCV_PREFIX)gcc
-RISCV_GCC_OPTS ?= -DPREALLOCATE=1 -mcmodel=medany -static -std=gnu99 -O2 -ffast-math -fno-common -fno-builtin-printf -fno-tree-loop-distribute-patterns -march=$(MARCH) -mabi=$(MABI) -Wl,-melf32lriscv
+RISCV_GCC_OPTS ?= -DPREALLOCATE=1 -mcmodel=medany -static -std=gnu99 -O2 -ffast-math -fno-common -fno-builtin-printf -fno-tree-loop-distribute-patterns -march=$(MARCH) -mabi=$(MABI)
 RISCV_LINK ?= $(RISCV_GCC) -T $(src_dir)/common/test.ld $(incs)
-RISCV_LINK_OPTS ?= -static -nostdlib -nostartfiles -lm -lgcc -T $(src_dir)/common/test.ld
+RISCV_LINK_OPTS ?= -static -nostdlib -nostartfiles -lm -lgcc -T $(src_dir)/common/test.ld 
 RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump --disassemble-all --disassemble-zeroes --section=.text --section=.text.startup --section=.text.init --section=.data --section=.rodata --section=.rodata.str1.4
 RISCV_OBJCOPY ?= $(RISCV_PREFIX)objcopy -O binary -j .text.startup -j .text.init -j .text -j .data -j .rodata -j .rodata.str1.4
 RISCV_SIM ?= spike --isa=$(MARCH)

@@ -65,15 +65,11 @@ uintptr_t __attribute__((weak)) handle_trap(uintptr_t cause, uintptr_t epc, uint
 
 void exit(int code)
 {
-  if(code != 0){
+  if (code != 0) {
     bad_trap
-  }
-  else
-  {
+  } else {
     good_trap
   }
-  
-  // tohost_exit(code);
 }
 
 void abort()
@@ -363,6 +359,12 @@ int printf(const char* fmt, ...)
   return 0; // incorrect return value, but who cares, anyway?
 }
 
+int scanf(const char* fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+  
+}
+
 int sprintf(char* str, const char* fmt, ...)
 {
   va_list ap;
@@ -487,4 +489,20 @@ long atol(const char* str)
   }
 
   return sign ? -res : res;
+}
+
+#undef strcat
+char* strcat(char *dst, const char *src)
+{
+	char *d;
+
+	if (!dst || !src)
+		return (dst);
+
+	d = dst;
+	for (; *d; d++);
+	for (; *src; src++)
+		*d++ = *src;
+	*d = 0;
+	return (dst);
 }
