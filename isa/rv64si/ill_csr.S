@@ -21,7 +21,7 @@ mtvec_handler:
   j fail;
 m_ill_inst:
   csrr t1, mepc;
-  addi t1, t1, 0x4;
+  addi t1, t1, 0x8;
   csrw mepc, t1;
   mret;
 
@@ -32,7 +32,7 @@ stvec_handler:
   j fail;
 s_ill_inst:
   csrr t1, sepc;
-  addi t1, t1, 0x4;
+  addi t1, t1, 0x8;
   csrw sepc, t1;
   mret;
 

@@ -2,4 +2,4 @@
 #undef RVTEST_RV64S
 #define RVTEST_RV64S RVTEST_RV32S
 
-#include "../rv64si/laf.S"
+#include "../rv64si/lam.S"
