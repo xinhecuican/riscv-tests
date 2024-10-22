@@ -16,6 +16,7 @@ limitations under the License.
 
 #include <coremark.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 #define ZEROPAD  	(1<<0)	/* Pad with zero */
 #define SIGN    	(1<<1)	/* Unsigned/signed long */
