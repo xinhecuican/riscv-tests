@@ -40,9 +40,10 @@ bmarks = \
 	memcpy \
 	multiply \
 	mm \
-	dhrystone \
 	spmv \
 	uart \
+	coremark \
+	# dhrystone \
 	# mt-vvadd \
 	# mt-matmul \
 	# mt-memcpy \
