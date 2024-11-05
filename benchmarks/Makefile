@@ -43,10 +43,10 @@ bmarks = \
 	spmv \
 	uart \
 	coremark \
+	mt-matmul \
+	mt-memcpy \
 	# dhrystone \
 	# mt-vvadd \
-	# mt-matmul \
-	# mt-memcpy \
 	# pmp \
 
 #--------------------------------------------------------------------
@@ -58,8 +58,8 @@ RISCV_GCC ?= $(RISCV_PREFIX)gcc
 RISCV_GCC_OPTS ?= -DPREALLOCATE=1 -mcmodel=medany -static -std=gnu99 -O2 -ffast-math -fno-common -fno-builtin-printf -fno-tree-loop-distribute-patterns -march=$(MARCH) -mabi=$(MABI)
 RISCV_LINK ?= $(RISCV_GCC) -T $(src_dir)/common/test.ld $(incs)
 RISCV_LINK_OPTS ?= -static -nostdlib -nostartfiles -lm -lgcc -T $(src_dir)/common/test.ld 
-RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump --disassemble-all --disassemble-zeroes --section=.text --section=.text.startup --section=.text.init --section=.data --section=.rodata --section=.rodata.str1.4
-RISCV_OBJCOPY ?= $(RISCV_PREFIX)objcopy -O binary -j .text.startup -j .text.init -j .text -j .data -j .rodata -j .rodata.str1.4
+RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump --disassemble-all --disassemble-zeroes --section=.text --section=.text.startup --section=.text.init --section=.data --section=.rodata --section=.rodata.str1.4 --section=.text.fma
+RISCV_OBJCOPY ?= $(RISCV_PREFIX)objcopy -O binary -j .text.startup -j .text.init -j .text -j .data -j .rodata -j .rodata.str1.4 -j .text.fma
 RISCV_SIM ?= spike --isa=$(MARCH)
 
 incs  += -I$(src_dir)/../env -I$(src_dir)/common $(addprefix -I$(src_dir)/, $(bmarks))
