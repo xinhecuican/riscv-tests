@@ -13,7 +13,20 @@
 #undef strcmp
 
 extern volatile uint8_t tohost;
-extern volatile uint8_t fromhost;
+extern volatile uint8_t lsr;
+
+void uart16550_putchar(uint8_t ch)
+{
+  while ((lsr & 0x20) == 0);
+  tohost = ch;
+}
+
+int uart16550_getchar()
+{
+  if (lsr & 0x01)
+    return tohost;
+  return -1;
+}
 
 static uintptr_t syscall(uintptr_t which, uint64_t arg0, uint64_t arg1, uint64_t arg2)
 {
@@ -22,7 +35,7 @@ static uintptr_t syscall(uintptr_t which, uint64_t arg0, uint64_t arg1, uint64_t
     char* buf = (char*)arg1;
     uint64_t len = arg2;
     for (int i = 0; i < len; i++) {
-      tohost = buf[i];
+      uart16550_putchar(buf[i]);
     }
     __sync_synchronize();
   }
@@ -53,7 +66,7 @@ void setStats(int enable)
 
 void __attribute__((noreturn)) tohost_exit(uintptr_t code)
 {
-  tohost = (code << 1) | 1;
+  uart16550_putchar((code << 1) | 1);
   while (1);
 }
 

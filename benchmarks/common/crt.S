@@ -219,6 +219,14 @@ trap_entry:
 
 .section ".tohost","aw",@progbits
 .globl tohost
-tohost: .word 0
-.globl fromhost
-fromhost: .word 0
+tohost: .byte 0
+.globl ier
+ier: .byte 0
+.globl fcr
+fcr: .byte 0
+.globl lcr
+lcr: .byte 0
+.globl mcr
+mcr: .byte 0
+.globl lsr
+lsr: .byte 0
