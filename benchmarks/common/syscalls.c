@@ -7,10 +7,18 @@
 #include <limits.h>
 #include <sys/signal.h>
 #include "util.h"
+#include <math.h>
 
 #define SYS_write 64
 
 #undef strcmp
+
+#ifdef __riscv_double_float
+typedef double f_t;
+#else
+typedef float f_t;
+#define modf modff
+#endif
 
 extern volatile uint8_t tohost;
 extern volatile uint8_t lsr;
@@ -170,7 +178,7 @@ void printhex(uint64_t x)
 }
 
 static inline void printnum(void (*putch)(int, void**), void **putdat,
-                    unsigned long long num, unsigned base, int width, int padc)
+                    unsigned long long num, unsigned base, int width, int padc, int printpad)
 {
   unsigned digs[sizeof(num)*CHAR_BIT];
   int pos = 0;
@@ -183,11 +191,92 @@ static inline void printnum(void (*putch)(int, void**), void **putdat,
     num /= base;
   }
 
-  while (width-- > pos)
-    putch(padc, putdat);
+  if (printpad) {
+    while (width-- > pos)
+      putch(padc, putdat);
+  }
 
   while (pos-- > 0)
     putch(digs[pos] + (digs[pos] >= 10 ? 'a' - 10 : '0'), putdat);
+}
+
+static inline void printfloat(void (*putch)(int, void**), void **putdat,
+                              f_t num, int width, int prec) {
+#ifdef __riscv_double_float
+  struct IEEEdp {
+    unsigned sign:1;
+    unsigned exp:11;
+    unsigned man: 52;
+  } *ip;
+#else
+  struct IEEEdp {
+    unsigned sign:1;
+    unsigned exp:8;
+    unsigned man: 23;
+  } *ip;
+#endif
+  int i;
+  ip = (struct IEEEdp *)&num;
+#ifdef __riscv_double_float
+  uint8_t finite = ip->exp != 0x7ff;
+#else
+  uint8_t finite = ip->exp != 0xff;
+#endif
+  uint8_t nan = num != num;
+  if (finite == 0) {
+    char buf[11];
+    if (nan) {
+      strcpy(buf, "NaN");
+      for (i = 0; i < 3; i++) {
+        putch(buf[i], putdat);
+      }
+    } else if (num < 0) {
+      strcpy(buf, "-Infinity");
+      for (i = 0; i < 9; i++) {
+        putch(buf[i], putdat);
+      }
+    } else {
+      strcpy(buf, "Infinity");
+      for (i = 0; i < 8; i++) {
+        putch(buf[i], putdat);
+      }
+    }
+    return;
+  }
+
+  if (prec == 0) {
+    prec = 6;
+  }
+
+  if (num < 0) {
+    putch('-', putdat);
+  }
+
+  f_t integer, fraction;
+
+  fraction = modf(num, &integer);
+  uint8_t intVal[256];
+  uint32_t index = 0;
+  while (integer > 0.5 & index < 256) {
+    float tmp = modf(integer * 0.1f, &integer);
+    uint32_t int_i = (tmp + .01f) * 10;
+    intVal[index++] = int_i;
+  }
+int_out:;
+  if (index == 0) {
+    putch('0', putdat);
+  } else {
+    for (int i = index - 1; i >= 0; i--) {
+      putch(intVal[i], '0' + putdat);
+    }
+  }
+  uint32_t prec_val = 1;
+  putch('.', putdat);
+  for (int i=0; i<prec; i++) {
+    prec_val *= 10;
+  }
+  uint32_t frac = fraction * prec_val;
+  printnum(putch, putdat, frac, 10, width, 0, 0);
 }
 
 static unsigned long long getuint(va_list *ap, int lflag)
@@ -344,7 +433,13 @@ static void vprintfmt(void (*putch)(int, void**), void **putdat, const char *fmt
     unsigned_number:
       num = getuint(&ap, lflag);
     signed_number:
-      printnum(putch, putdat, num, base, width, padc);
+      printnum(putch, putdat, num, base, width, padc, 1);
+      break;
+
+    case 'f':
+      double argval = va_arg(ap, double);
+      float fval = argval;
+      printfloat(putch, putdat, fval, width, precision);
       break;
 
     // escaped '%' character

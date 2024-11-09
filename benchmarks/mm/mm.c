@@ -5,6 +5,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <alloca.h>
+#include <stddef.h>
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 

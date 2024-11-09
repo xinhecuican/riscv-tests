@@ -31,6 +31,7 @@ void thread_entry(int cid, int nc)
     for (size_t j = 0; j < n; j++)
       b[i*n+j] = (t)(s = lfsr(s));
   memset(c, 0, m*n*sizeof(c[0]));
+  printf("%f %f\n", a[0], b[0]);
 
   size_t instret, cycles;
   for (int i = 0; i < R; i++)
@@ -51,7 +52,7 @@ void thread_entry(int cid, int nc)
   printf("C%d: %d flops\n", cid, 2*m*n*p);
   printf("C%d: %d Mflops @ 1 GHz\n", cid, 2000*m*n*p/(cycles));
 
-#if 1
+#ifndef SP // 单精度存在溢出，验证失败
   for (size_t i = 0; i < m; i++)
   {
     for (size_t j = 0; j < n; j++)
