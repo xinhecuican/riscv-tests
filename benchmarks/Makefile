@@ -21,7 +21,7 @@ instname = riscv-bmarks
 instbasedir = $(UCB_VLSI_HOME)/install
 ifeq ($(XLEN),32)
 MABI := ilp$(XLEN)f
-MARCH := rv32imaf_zifencei_zicsr
+MARCH := rv32imafc_zifencei_zicsr
 else
 MABI := ilp$(XLEN)d
 MARCH := rv64gc
