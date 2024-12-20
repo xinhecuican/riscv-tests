@@ -45,7 +45,7 @@ bmarks = \
 	coremark \
 	mt-matmul \
 	mt-memcpy \
-	# dhrystone \
+	dhrystone \
 	# mt-vvadd \
 	# pmp \
 
