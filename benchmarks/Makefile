@@ -23,7 +23,7 @@ ifeq ($(XLEN),32)
 MABI := ilp$(XLEN)f
 MARCH := rv32imafc_zifencei_zicsr
 else
-MABI := ilp$(XLEN)d
+MABI := lp$(XLEN)d
 MARCH := rv64gc
 endif
 

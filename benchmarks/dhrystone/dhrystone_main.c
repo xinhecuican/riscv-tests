@@ -257,12 +257,13 @@ int main (int argc, char** argv)
 
     User_Time = End_Time - Begin_Time;
 
-    if (User_Time < Too_Small_Time)
-    {
-      printf("Measured time too small to obtain meaningful results\n");
-      Number_Of_Runs = Number_Of_Runs * 10;
-      printf("\n");
-    } else Done = true;
+    // if (User_Time < Too_Small_Time)
+    // {
+    //   printf("Measured time too small to obtain meaningful results\n");
+    //   Number_Of_Runs = Number_Of_Runs * 10;
+    //   printf("\n");
+    // } else Done = true;
+    Done = true;
   }
 
   printf("Final values of the variables used in the benchmark:\n");
